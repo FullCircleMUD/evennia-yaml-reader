@@ -6,7 +6,7 @@ The library abstracts *where the YAML lives* — local filesystem, GitHub repo, 
 
 ## Status
 
-**Foundational.** `Reader` contract + `GitHubReader` + `LocalReader` are in place, ported from [evennia-world-builder](https://github.com/FullCircleMUD/evennia-world-builder) where the pattern was first proven. 15 unit tests green. See [DESIGN/progress.md](DESIGN/progress.md) for the running milestone log.
+**Foundational.** `Reader` contract + `GitHubReader` + `LocalReader` are in place, ported from [evennia-world-builder](https://github.com/FullCircleMUD/evennia-world-builder) where the pattern was first proven. 15 unit tests green. See [docs/progress.md](docs/progress.md) for the running milestone log.
 
 ## What's in the box
 
@@ -67,8 +67,8 @@ python runtests.py
 ## Learn more
 
 - **[CLAUDE.md](CLAUDE.md)** — load-bearing principles and orientation for working in the repository.
-- **[DESIGN/INDEX.md](DESIGN/INDEX.md)** — index of design documents.
-- **[DESIGN/reader-api.md](DESIGN/reader-api.md)** — the architectural decisions behind the `Reader` contract.
+- **[docs/INDEX.md](docs/INDEX.md)** — index of design documents.
+- **[docs/reader-api.md](docs/reader-api.md)** — the architectural decisions behind the `Reader` contract.
 - **[src/evennia_yaml_reader/base.md](src/evennia_yaml_reader/base.md)** — `Reader` and `ReaderResult` reference, co-located with the code.
 
 ## License

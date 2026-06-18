@@ -1,5 +1,10 @@
 # CLAUDE.md
 
+> **Project-wide working rules and cross-repo context live in the FCM umbrella repo's `CLAUDE.md`**,
+> loaded automatically when you work from the umbrella root. If you opened this repo directly instead
+> of via the umbrella, relaunch from the umbrella root for the full context. This file holds only this
+> repo's specific instructions.
+
 Instructions for Claude (and other LLM agents) working in this repository.
 
 ## What this project is
@@ -9,11 +14,11 @@ Instructions for Claude (and other LLM agents) working in this repository.
 The library is Evennia-flavored by intended audience but is **not coupled to Evennia at runtime**: it has no Evennia or Django dependencies. It is a small, focused primitive that other Evennia-ecosystem libraries (e.g. [evennia-world-builder](https://github.com/FullCircleMUD/evennia-world-builder), [evennia-mob-spawner](https://github.com/FullCircleMUD/evennia-mob-spawner)) depend on.
 
 For the big-picture overview, read [README.md](README.md).
-For the design wiki, read [DESIGN/INDEX.md](DESIGN/INDEX.md).
+For the design wiki, read [docs/INDEX.md](docs/INDEX.md).
 
 ## Project status
 
-For the current state of the project — milestones reached, what's pending — see [DESIGN/progress.md](DESIGN/progress.md), the running log of milestones with links to evidence.
+For the current state of the project — milestones reached, what's pending — see [docs/progress.md](docs/progress.md), the running log of milestones with links to evidence.
 
 The library is being extracted from `evennia-world-builder`, where the Reader pattern was first proven. The original implementations live (today) at [src/evennia_world_builder/readers/](https://github.com/FullCircleMUD/evennia-world-builder/tree/main/src/evennia_world_builder/readers) and serve as the substrate for this library's initial code drop.
 
@@ -22,8 +27,8 @@ The library is being extracted from `evennia-world-builder`, where the Reader pa
 For any non-trivial task, start by reading in this order:
 
 1. [README.md](README.md) — what the project is, status, quick start.
-2. [DESIGN/INDEX.md](DESIGN/INDEX.md) — map of all design docs.
-3. [DESIGN/documentation-structure.md](DESIGN/documentation-structure.md) — what goes in CLAUDE.md vs README.md vs DESIGN/, and naming conventions.
+2. [docs/INDEX.md](docs/INDEX.md) — map of all design docs.
+3. [docs/documentation-structure.md](docs/documentation-structure.md) — what goes in CLAUDE.md vs README.md vs docs/, and naming conventions.
 4. [../LIBRARY_STANDARDS.md](../LIBRARY_STANDARDS.md) — cross-library conventions for everything under `FCM/libraries/`.
 
 ## Load-bearing architectural principles
@@ -39,7 +44,7 @@ These are the principles every implementation decision must respect. Getting the
 
 ## Out of scope
 
-Scope boundaries are decided as concrete questions arise, by applying the principles above. The library's surface area will be drawn deliberately as actual design needs surface, with each scope decision captured in DESIGN/ when it is made.
+Scope boundaries are decided as concrete questions arise, by applying the principles above. The library's surface area will be drawn deliberately as actual design needs surface, with each scope decision captured in docs/ when it is made.
 
 Areas where scope questions are likely to need explicit decisions (TBD when they arrive):
 
@@ -51,20 +56,20 @@ Areas where scope questions are likely to need explicit decisions (TBD when they
 
 ## Working conventions
 
-- **Editing design docs.** Update or add design documents whenever an architectural decision is made or refined. Capture the *why*, not just the *what*. Index new docs in [DESIGN/INDEX.md](DESIGN/INDEX.md).
-- **CLAUDE.md vs README.md vs DESIGN/.** See [DESIGN/documentation-structure.md](DESIGN/documentation-structure.md) for the split. CLAUDE.md is for Claude-facing instructions; README.md is for humans landing on the repo; DESIGN/ is the technical wiki.
-- **Don't put implementation detail in this file or README.** Link out to DESIGN/ instead. Keep CLAUDE.md and README.md stable; let DESIGN/ churn.
+- **Editing design docs.** Update or add design documents whenever an architectural decision is made or refined. Capture the *why*, not just the *what*. Index new docs in [docs/INDEX.md](docs/INDEX.md).
+- **CLAUDE.md vs README.md vs docs/.** See [docs/documentation-structure.md](docs/documentation-structure.md) for the split. CLAUDE.md is for Claude-facing instructions; README.md is for humans landing on the repo; docs/ is the technical wiki.
+- **Don't put implementation detail in this file or README.** Link out to docs/ instead. Keep CLAUDE.md and README.md stable; let docs/ churn.
 - **License.** BSD 3-Clause. New source files should carry a short SPDX header (`# SPDX-License-Identifier: BSD-3-Clause`) once code starts landing.
 
 ## Documentation discipline (load-bearing)
 
-Design documents in `DESIGN/` must reflect decisions **actually discussed and agreed on with the project owner**. They are not a place to forward-design the system from first principles or extrapolate "reasonable defaults" from a starting point.
+Design documents in `docs/` must reflect decisions **actually discussed and agreed on with the project owner**. They are not a place to forward-design the system from first principles or extrapolate "reasonable defaults" from a starting point.
 
 **Rules:**
 
 1. **Only capture what was discussed and agreed.** If the conversation establishes a principle (e.g. "the Reader is source-agnostic"), do not extrapolate it into specifics that were not raised (e.g. a specific Reader implementation list, a chosen caching policy, retry semantics).
 2. **Flag open questions explicitly.** Where a topic has been raised but not resolved, write `[TBD — needs discussion: <what is open>]` in the doc. Future sessions then pick the topic up deliberately rather than inheriting unagreed assumptions.
-3. **Distinguish archived material from in-conversation decisions.** Material in `DESIGN/archive/` is preserved historical context, not authoritative. Restating archived content in new docs is acceptable when it provides necessary context, but mark it as such rather than presenting it as a decision freshly made or as canonical project intent.
+3. **Distinguish archived material from in-conversation decisions.** Material in `docs/archive/` is preserved historical context, not authoritative. Restating archived content in new docs is acceptable when it provides necessary context, but mark it as such rather than presenting it as a decision freshly made or as canonical project intent.
 4. **Smaller is better.** A doc that captures three discussed points faithfully is more useful than one that captures three discussed points plus seven invented ones. Resist the urge to fill out sections "for completeness."
 
 If a session catches itself writing content that goes beyond what was discussed, stop and either remove the extrapolation or convert it to a `[TBD]` marker. Documentation that puts unagreed decisions in the project's mouth is worse than documentation that has gaps.
@@ -79,7 +84,7 @@ evennia-yaml-reader/
 ├── pyproject.toml
 ├── runtests.py                # standalone test runner (pure stdlib unittest)
 ├── .gitignore
-├── DESIGN/                    # technical wiki (humans + LLMs)
+├── docs/                    # technical wiki (humans + LLMs)
 │   ├── INDEX.md
 │   ├── progress.md
 │   ├── documentation-structure.md

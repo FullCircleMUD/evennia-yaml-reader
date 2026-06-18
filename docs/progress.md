@@ -10,6 +10,6 @@ Running log of milestones with links to evidence. Reverse chronological — newe
 
   Design captured in [reader-api.md](reader-api.md) — port of world-builder's equivalent doc with the consumer-concern bits stripped out and the provenance note added.
 
-- **Repository bootstrapped.** LIBRARY_STANDARDS scaffold in place: `pyproject.toml`, `runtests.py`, `src/evennia_yaml_reader/__init__.py` (version 0.0.1), smoke test, `CLAUDE.md`, `README.md`, `DESIGN/INDEX.md`, `DESIGN/progress.md`, `DESIGN/documentation-structure.md`, `DESIGN/archive/`. The library is pure-Python (no Evennia / Django coupling) — a deliberate divergence from LIBRARY_STANDARDS captured in CLAUDE.md principle 5.
+- **Repository bootstrapped.** LIBRARY_STANDARDS scaffold in place: `pyproject.toml`, `runtests.py`, `src/evennia_yaml_reader/__init__.py` (version 0.0.1), smoke test, `CLAUDE.md`, `README.md`, `docs/INDEX.md`, `docs/progress.md`, `docs/documentation-structure.md`, `docs/archive/`. The library is pure-Python (no Evennia / Django coupling) — a deliberate divergence from LIBRARY_STANDARDS captured in CLAUDE.md principle 5.
 
   Decision context: the extraction was discussed and agreed because more declarative-content libraries are planned (e.g. [evennia-mob-spawner](https://github.com/FullCircleMUD/evennia-mob-spawner)), each of which would otherwise duplicate the Reader. With three or more consumers anticipated, library overhead amortises and a single source-of-truth for the Reader pattern becomes the cheaper option.

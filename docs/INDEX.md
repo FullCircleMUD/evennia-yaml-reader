@@ -4,7 +4,7 @@ Map of all design documents in this directory, organised by category. Add new do
 
 ## Process and discipline
 
-- **[documentation-structure.md](documentation-structure.md)** — what goes in CLAUDE.md vs README.md vs DESIGN/, conventions for new design documents.
+- **[documentation-structure.md](documentation-structure.md)** — what goes in CLAUDE.md vs README.md vs docs/, conventions for new design documents.
 - **[progress.md](progress.md)** — running log of milestones with links to evidence.
 
 ## Architecture and design
@@ -13,7 +13,7 @@ Map of all design documents in this directory, organised by category. Add new do
 
 ## Co-located reference docs
 
-These live alongside the source code rather than in `DESIGN/`. They are detailed reference for the code they sit next to — kept co-located so the docs and code move together. Linked here for discoverability.
+These live alongside the source code rather than in `docs/`. They are detailed reference for the code they sit next to — kept co-located so the docs and code move together. Linked here for discoverability.
 
 - **[../src/evennia_yaml_reader/base.md](../src/evennia_yaml_reader/base.md)** — `Reader` and `ReaderResult` reference: signatures, algorithm, class attributes, error contract, design notes per field.
 
