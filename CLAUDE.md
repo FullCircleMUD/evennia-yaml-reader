@@ -28,8 +28,6 @@ For any non-trivial task, start by reading in this order:
 
 1. [README.md](README.md) — what the project is, status, quick start.
 2. [docs/INDEX.md](docs/INDEX.md) — map of all design docs.
-3. [../LIBRARY_STANDARDS.md](../LIBRARY_STANDARDS.md) — cross-library conventions for everything under `FCM/libraries/`.
-
 ## Load-bearing architectural principles
 
 These are the principles every implementation decision must respect. Getting them wrong is expensive to undo.
@@ -38,7 +36,7 @@ These are the principles every implementation decision must respect. Getting the
 2. **No FCM-specific assumptions.** This library was extracted from infrastructure that originated in service of FullCircleMUD (FCM). Anything FCM-specific creeping into the library is a code smell. Repo paths, file-naming conventions, tag systems, identity schemes — all belong to whichever consuming library uses them. Default to "consumer concern" when uncertain.
 3. **Source-agnostic core.** The base `Reader` interface is the contract. Adding a new backend implementation (S3, GitLab, an HTTP endpoint, a database, a packaged bundle) must not require changes to the interface, the consumer's call sites, or the settings-dispatch convention. The library is `Reader` plus a small set of concrete implementations that all honour the same contract.
 4. **Typed errors, never silent defaults.** Every failure mode raises a specific exception (`ReaderNotFoundError`, `ReaderAuthError`, `ReaderNetworkError`, `ReaderParseError`). Consumers dispatch on type. The library never returns `None`, an empty string, or a sentinel object to indicate failure — those patterns hide bugs.
-5. **No Evennia or Django coupling — deliberate divergence from LIBRARY_STANDARDS.** This library is upstream of any Evennia integration. Pulling Evennia into the dependency graph here would slow tests, pull in a large transitive footprint, and make the library less reusable for non-Evennia contexts. Tests use pure stdlib `unittest` via `runtests.py`. The "evennia-" prefix is for ecosystem discoverability, not coupling.
+5. **No Evennia or Django coupling — deliberate divergence from the library standards.** This library is upstream of any Evennia integration. Pulling Evennia into the dependency graph here would slow tests, pull in a large transitive footprint, and make the library less reusable for non-Evennia contexts. Tests use pure stdlib `unittest` via `runtests.py`. The "evennia-" prefix is for ecosystem discoverability, not coupling.
 6. **Synthetic content first.** Build the library against synthetic test fixtures the library owns (fixture YAML files in the test tree, fake HTTP responses, simulated filesystem layouts), exhaustively, before any consumer-library integration. Real consumer content surfaces edge cases synthetic fixtures didn't reach; when it does, pause integration, capture the case as a new synthetic fixture, fix against it, resume. Fixtures stay forever as regression coverage.
 
 ## Out of scope
@@ -92,7 +90,7 @@ evennia-yaml-reader/
         └── tests.py           # unit tests, run via runtests.py
 ```
 
-Note: no `tests/` infrastructure folder (no Django settings, no Evennia bootstrap) and no `examples/` (no demo gamedirs needed for a pure-Python primitive). These are deliberate divergences from LIBRARY_STANDARDS, justified by the pure-Python framing — see principle 5.
+Note: no `tests/` infrastructure folder (no Django settings, no Evennia bootstrap) and no `examples/` (no demo gamedirs needed for a pure-Python primitive). These are deliberate divergences from the library standards, justified by the pure-Python framing — see principle 5.
 
 ## Tools and environment
 
@@ -105,7 +103,4 @@ Note: no `tests/` infrastructure folder (no Django settings, no Evennia bootstra
 
 When in doubt about a convention not covered here, look at how a sibling library does it:
 
-- **[../evennia-world-builder/](../evennia-world-builder/)** — the library this code is being extracted from. Reference for the Reader pattern's first proven implementation.
-- **[../evennia-stateful-text/](../evennia-stateful-text/)** — pure-Python library with the same deliberate-divergence framing (no Evennia/Django coupling, stdlib unittest). Reference for repo scaffold and `runtests.py` shape.
-- **[../evennia-shards/](../evennia-shards/)** — full Evennia-bootstrapped library with Django test settings. Reference for what *not* to do here (since this library doesn't need that machinery), but a useful sanity check against drifting too far from the standard.
-- **[../LIBRARY_STANDARDS.md](../LIBRARY_STANDARDS.md)** — cross-library conventions; authoritative for anything structural not specified in this CLAUDE.md.
+- **[../evennia-world-builder/](../evennia-world-builder/)** — the library this code is being extracted from. Reference for the Reader pattern's first proven implementation.- **[../evennia-shards/](../evennia-shards/)** — full Evennia-bootstrapped library with Django test settings. Reference for what *not* to do here (since this library doesn't need that machinery), but a useful sanity check against drifting too far from the standard.
