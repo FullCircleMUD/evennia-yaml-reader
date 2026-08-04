@@ -6,7 +6,7 @@ implementations shipped today (`GitHubReader`, `LocalReader`), and the typed
 exception hierarchy that every Reader's `read()` raises on failure.
 """
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
 from .base import Reader, ReaderResult
 from .errors import (

@@ -27,7 +27,7 @@ class PackageSmokeTest(unittest.TestCase):
     """Sanity check that the package is importable and versioned."""
 
     def test_version_present(self):
-        self.assertEqual(evennia_yaml_reader.__version__, "0.0.1")
+        self.assertEqual(evennia_yaml_reader.__version__, "0.1.0")
 
 
 class GitHubReaderTest(unittest.TestCase):
