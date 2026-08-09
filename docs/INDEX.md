@@ -8,6 +8,7 @@ Map of all design documents in this directory, organised by category. Add new do
 
 ## Architecture and design
 
+- **[interoperability.md](interoperability.md)** — this library against every sibling library in `libraries/`: the relationship and the considerations or explicit clearance for each. Consumed by two siblings, consumes none.
 - **[reader-api.md](reader-api.md)** — the load-bearing `Reader` contract: configured connection + per-read `path`, `ReaderResult` shape, typed exceptions, `required_kwargs` discoverability. Captures the decisions behind the contract and points at the co-located reference at [../src/evennia_yaml_reader/base.md](../src/evennia_yaml_reader/base.md).
 
 ## Co-located reference docs
