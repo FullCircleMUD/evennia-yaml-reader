@@ -6,7 +6,7 @@ The library abstracts *where the YAML lives* — local filesystem, GitHub repo, 
 
 ## Status
 
-**Foundational.** `Reader` contract + `GitHubReader` + `LocalReader` are in place, ported from [evennia-world-builder](https://github.com/FullCircleMUD/evennia-world-builder) where the pattern was first proven. 15 unit tests green. See [docs/progress.md](docs/progress.md) for the running milestone log.
+**Foundational.** `Reader` contract + `GitHubReader` + `LocalReader` are in place, ported from [evennia-world-builder](https://github.com/FullCircleMUD/evennia-world-builder) where the pattern was first proven. 15 unit tests green. See [docs/progress.md](https://github.com/FullCircleMUD/evennia-yaml-reader/blob/main/docs/progress.md) for the running milestone log.
 
 ## What's in the box
 
@@ -37,7 +37,9 @@ The Reader instance is reusable — construct once per source, call `read(path)`
 
 ## Is this for me?
 
-This library is useful if you are building an Evennia-flavored library or consumer game that:
+This library is a **plumbing dependency** — most of its value shows up one layer removed, inside other Evennia-ecosystem libraries that read declarative YAML content, rather than in a gamedir installing it directly. Current examples: [evennia-world-builder](https://github.com/FullCircleMUD/evennia-world-builder) and [evennia-mob-spawner](https://github.com/FullCircleMUD/evennia-mob-spawner). Each is intended to publish to PyPI the same way this library does; if one hasn't published yet, its GitHub repo linked above is the source in the meantime.
+
+You'd install this library directly if you're building a new Evennia-flavored library that:
 
 - Wants to keep YAML content in a separate repository (e.g. a content repo distinct from your gamedir).
 - Wants to develop locally against a working copy of that repo and deploy from GitHub in production — without changing call sites.
@@ -47,10 +49,8 @@ If you only ever read YAML from one location with one auth model, `open(path) + 
 
 ## Install
 
-The package is not on PyPI yet. Install directly from git:
-
 ```
-pip install git+https://github.com/FullCircleMUD/evennia-yaml-reader.git@main
+pip install evennia-yaml-reader
 ```
 
 Editable install for development against a checkout:
@@ -66,11 +66,11 @@ python runtests.py
 
 ## Learn more
 
-- **[CLAUDE.md](CLAUDE.md)** — load-bearing principles and orientation for working in the repository.
-- **[docs/INDEX.md](docs/INDEX.md)** — index of design documents.
-- **[docs/reader-api.md](docs/reader-api.md)** — the architectural decisions behind the `Reader` contract.
-- **[src/evennia_yaml_reader/base.md](src/evennia_yaml_reader/base.md)** — `Reader` and `ReaderResult` reference, co-located with the code.
+- **[CLAUDE.md](https://github.com/FullCircleMUD/evennia-yaml-reader/blob/main/CLAUDE.md)** — load-bearing principles and orientation for working in the repository.
+- **[docs/INDEX.md](https://github.com/FullCircleMUD/evennia-yaml-reader/blob/main/docs/INDEX.md)** — index of design documents.
+- **[docs/reader-api.md](https://github.com/FullCircleMUD/evennia-yaml-reader/blob/main/docs/reader-api.md)** — the architectural decisions behind the `Reader` contract.
+- **[src/evennia_yaml_reader/base.md](https://github.com/FullCircleMUD/evennia-yaml-reader/blob/main/src/evennia_yaml_reader/base.md)** — `Reader` and `ReaderResult` reference, co-located with the code.
 
 ## License
 
-BSD 3-Clause. See [LICENSE](LICENSE).
+BSD 3-Clause. See [LICENSE](https://github.com/FullCircleMUD/evennia-yaml-reader/blob/main/LICENSE).
