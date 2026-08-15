@@ -37,7 +37,7 @@ The Reader instance is reusable — construct once per source, call `read(path)`
 
 ## Is this for me?
 
-This library is a **plumbing dependency** — most of its value shows up one layer removed, inside other Evennia-ecosystem libraries that read declarative YAML content, rather than in a gamedir installing it directly. Current examples: [evennia-world-builder](https://github.com/FullCircleMUD/evennia-world-builder) and [evennia-mob-spawner](https://github.com/FullCircleMUD/evennia-mob-spawner). Each is intended to publish to PyPI the same way this library does; if one hasn't published yet, its GitHub repo linked above is the source in the meantime.
+This library is a **plumbing dependency** — most of its value shows up one layer removed, inside other Evennia-ecosystem libraries that read declarative YAML content, rather than in a gamedir installing it directly. Current examples: [evennia-world-builder](https://github.com/FullCircleMUD/evennia-world-builder) and [evennia-mob-spawner](https://github.com/FullCircleMUD/evennia-mob-spawner). Both publish to PyPI the same way this library does.
 
 You'd install this library directly if you're building a new Evennia-flavored library that:
 
