@@ -20,14 +20,16 @@ For the design wiki, read [docs/INDEX.md](docs/INDEX.md).
 
 For the current state of the project — milestones reached, what's pending — see [docs/progress.md](docs/progress.md), the running log of milestones with links to evidence.
 
-The library is being extracted from `evennia-world-builder`, where the Reader pattern was first proven. The original implementations live (today) at [src/evennia_world_builder/readers/](https://github.com/FullCircleMUD/evennia-world-builder/tree/main/src/evennia_world_builder/readers) and serve as the substrate for this library's initial code drop.
+The library ships the `Reader` contract, `ReaderResult`, the typed exception hierarchy, and two concrete readers: `GitHubReader` and `LocalReader`. It is consumed by `evennia-world-builder` and `evennia-mob-spawner`, and consumes no sibling library.
 
 ## Where to read first
 
 For any non-trivial task, start by reading in this order:
 
 1. [README.md](README.md) — what the project is, status, quick start.
-2. [docs/INDEX.md](docs/INDEX.md) — map of all design docs.
+2. [docs/reader-api.md](docs/reader-api.md) — the `Reader` contract and the decisions behind it, with the detailed reference co-located at [src/evennia_yaml_reader/base.md](src/evennia_yaml_reader/base.md).
+3. [docs/test-plan.md](docs/test-plan.md) — every case the library covers and the test covering it. **Any behavioural change starts here**, not in the code.
+4. [docs/INDEX.md](docs/INDEX.md) — map of all design docs.
 ## Load-bearing architectural principles
 
 These are the principles every implementation decision must respect. Getting them wrong is expensive to undo.
@@ -53,6 +55,7 @@ Areas where scope questions are likely to need explicit decisions (TBD when they
 
 ## Working conventions
 
+- **Behavioural change starts in the test plan.** Add or amend the case in [docs/test-plan.md](docs/test-plan.md), fill the **Test function** column when the test exists, then implement. The column is a coverage claim — never leave it stale.
 - **Editing design docs.** Update or add design documents whenever an architectural decision is made or refined. Capture the *why*, not just the *what*. Index new docs in [docs/INDEX.md](docs/INDEX.md).
 - **Don't put implementation detail in this file or README.** Link out to docs/ instead. Keep CLAUDE.md and README.md stable; let docs/ churn.
 - **License.** BSD 3-Clause. Source files carry an SPDX header on the first line (`# SPDX-License-Identifier: BSD-3-Clause`).
@@ -80,17 +83,27 @@ evennia-yaml-reader/
 ├── pyproject.toml
 ├── runtests.py                # standalone test runner (pure stdlib unittest)
 ├── .gitignore
-├── docs/                    # technical wiki (humans + LLMs)
+├── docs/                      # technical wiki (humans + LLMs)
 │   ├── INDEX.md
+│   ├── reader-api.md          # the Reader contract and its decisions
+│   ├── test-plan.md           # every case covered, and the test covering it
+│   ├── interoperability.md    # this library against every sibling
 │   ├── progress.md
 │   └── archive/               # historical context (currently empty)
+├── tests/                     # placeholder only — see tests/README.md
+│   └── README.md
 └── src/
     └── evennia_yaml_reader/   # library code (src layout)
-        ├── __init__.py
+        ├── __init__.py        # exports Reader, ReaderResult, both readers, the errors
+        ├── base.py            # the Reader contract; code-only
+        ├── base.md            # co-located reference for base.py
+        ├── errors.py          # ReaderError + the four typed subclasses
+        ├── github.py          # GitHubReader
+        ├── local.py           # LocalReader
         └── tests.py           # unit tests, run via runtests.py
 ```
 
-Note: no `tests/` infrastructure folder (no Django settings, no Evennia bootstrap) and no `examples/` (no demo gamedirs needed for a pure-Python primitive). These are deliberate divergences from the library standards, justified by the pure-Python framing — see principle 5.
+Note: `tests/` holds a README and nothing else — no Django settings, no Evennia bootstrap — and there is no `examples/` (no demo gamedirs needed for a pure-Python primitive). Both are deliberate divergences from the library standards, justified by the pure-Python framing — see principle 5.
 
 ## Tools and environment
 
@@ -98,9 +111,12 @@ Note: no `tests/` infrastructure folder (no Django settings, no Evennia bootstra
 - Runtime dependencies: `pyyaml` only. **No Evennia, no Django** — see principle 5.
 - **Tests use pure stdlib `unittest` via `runtests.py`** — deliberate divergence from sibling libraries that bootstrap Django for Evennia testing. The Reader has no Evennia dependency, so the Django bootstrap is unnecessary overhead.
 - Dedicated venv at `evennia-yaml-reader/venv/` (gitignored). Development install via `pip install -e .`.
+- Structural compliance: `python .claude/skills/library-standards-linter/lint_library.py evennia-yaml-reader` from the umbrella root. It validates the test-plan coverage trail too.
 
 ## Sibling libraries to reference
 
 When in doubt about a convention not covered here, look at how a sibling library does it:
 
-- **[../evennia-world-builder/](../evennia-world-builder/)** — the library this code is being extracted from. Reference for the Reader pattern's first proven implementation.- **[../evennia-shards/](../evennia-shards/)** — full Evennia-bootstrapped library with Django test settings. Reference for what *not* to do here (since this library doesn't need that machinery), but a useful sanity check against drifting too far from the standard.
+- **[../evennia-world-builder/](../evennia-world-builder/)** — a consumer of this library. Reference for how the Reader is constructed and driven from a consumer's settings dispatch.
+- **[../evennia-targeting/](../evennia-targeting/)** — the reference shape for `docs/test-plan.md` and its coverage trail.
+- **[../evennia-shards/](../evennia-shards/)** — full Evennia-bootstrapped library with Django test settings. Reference for what *not* to do here (since this library doesn't need that machinery), but a useful sanity check against drifting too far from the standard.
