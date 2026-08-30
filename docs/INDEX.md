@@ -5,6 +5,7 @@ Map of all design documents in this directory, organised by category. Add new do
 ## Process and discipline
 
 - **[progress.md](progress.md)** — running log of milestones with links to evidence.
+- **[test-plan.md](test-plan.md)** — every test case the library commits to covering and the test function covering it, plus the fixtures the suite uses. The coverage trail an auditor reads.
 
 ## Architecture and design
 

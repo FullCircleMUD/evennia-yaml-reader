@@ -5,9 +5,13 @@ Verifies the package is importable, the Reader contract is honoured by
 GitHubReader against a mocked urllib, and LocalReader operates against
 real temp-directory fixtures. Pure stdlib unittest — no Django, no Evennia.
 """
+import dataclasses
+import email
+import os
 import tempfile
 import unittest
 import urllib.error
+import urllib.parse
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -16,11 +20,15 @@ from evennia_yaml_reader import (
     GitHubReader,
     LocalReader,
     ReaderAuthError,
+    ReaderError,
     ReaderNetworkError,
     ReaderNotFoundError,
     ReaderParseError,
     ReaderResult,
 )
+
+# Not decodable as UTF-8; PyYAML surfaces it as a yaml.reader.ReaderError.
+UNDECODABLE_BYTES = b"key: caf\xe9\n"
 
 
 class PackageSmokeTest(unittest.TestCase):
@@ -28,6 +36,26 @@ class PackageSmokeTest(unittest.TestCase):
 
     def test_version_present(self):
         self.assertEqual(evennia_yaml_reader.__version__, "0.1.0")
+
+
+class ReaderContractTest(unittest.TestCase):
+    """Contract guarantees that hold across every Reader implementation."""
+
+    def test_reader_result_is_frozen(self):
+        result = ReaderResult(raw_bytes=b"k: v\n", parsed={"k": "v"})
+        with self.assertRaises(dataclasses.FrozenInstanceError):
+            result.parsed = {"k": "other"}
+
+    def test_all_errors_subclass_reader_error(self):
+        # A consumer catching the base must catch every reader failure.
+        for error_type in (
+            ReaderAuthError,
+            ReaderNetworkError,
+            ReaderNotFoundError,
+            ReaderParseError,
+        ):
+            with self.subTest(error_type=error_type.__name__):
+                self.assertTrue(issubclass(error_type, ReaderError))
 
 
 class GitHubReaderTest(unittest.TestCase):
@@ -100,6 +128,83 @@ class GitHubReaderTest(unittest.TestCase):
         with self.assertRaises(ReaderParseError):
             GitHubReader(**self.KWARGS).read(self.PATH)
 
+    def _requested_url(self, mock_urlopen, path: str) -> urllib.parse.SplitResult:
+        """Read the URL the reader actually built, split into its parts."""
+        mock_urlopen.return_value = self._response_with_payload(b"x: 1\n")
+        GitHubReader(**self.KWARGS).read(path)
+        return urllib.parse.urlsplit(mock_urlopen.call_args[0][0].full_url)
+
+    @patch("evennia_yaml_reader.github.urllib.request.urlopen")
+    def test_url_delimiters_in_path_are_escaped(self, mock_urlopen):
+        # Unescaped, everything after a "#" becomes a fragment and is never
+        # sent — the ref goes with it and GitHub answers from the default
+        # branch. A "?" corrupts the query the same way.
+        for path, expected in (
+            ("notes#1.yaml", "/repos/owner/repo/contents/notes%231.yaml"),
+            ("notes?1.yaml", "/repos/owner/repo/contents/notes%3F1.yaml"),
+        ):
+            with self.subTest(path=path):
+                split = self._requested_url(mock_urlopen, path)
+                self.assertEqual(split.path, expected)
+                self.assertEqual(split.query, "ref=main")
+                self.assertEqual(split.fragment, "")
+
+    @patch("evennia_yaml_reader.github.urllib.request.urlopen")
+    def test_space_and_non_ascii_in_path_are_escaped(self, mock_urlopen):
+        split = self._requested_url(mock_urlopen, "dark forest/café.yaml")
+        self.assertEqual(
+            split.path, "/repos/owner/repo/contents/dark%20forest/caf%C3%A9.yaml"
+        )
+        self.assertEqual(split.query, "ref=main")
+
+    @patch("evennia_yaml_reader.github.urllib.request.urlopen")
+    def test_path_separators_are_not_escaped(self, mock_urlopen):
+        split = self._requested_url(mock_urlopen, "areas/town/rooms.yaml")
+        self.assertEqual(split.path, "/repos/owner/repo/contents/areas/town/rooms.yaml")
+
+    @patch("evennia_yaml_reader.github.urllib.request.urlopen")
+    def test_ordinary_path_is_unchanged_by_escaping(self, mock_urlopen):
+        # Escaping must be a no-op for every path that already worked.
+        split = self._requested_url(mock_urlopen, "rooms/tavern.yaml")
+        self.assertEqual(split.path, "/repos/owner/repo/contents/rooms/tavern.yaml")
+
+    def _http_error(self, code: str, reason: str, headers: str = "") -> urllib.error.HTTPError:
+        """Build an HTTPError whose .headers behave like a real response's."""
+        return urllib.error.HTTPError(
+            "url", code, reason, email.message_from_string(headers), None
+        )
+
+    @patch("evennia_yaml_reader.github.urllib.request.urlopen")
+    def test_403_rate_limited_raises_network_error(self, mock_urlopen):
+        # Quota exhausted — transient, so the consumer may retry.
+        mock_urlopen.side_effect = self._http_error(
+            403, "rate limit exceeded", "X-RateLimit-Remaining: 0\n"
+        )
+        with self.assertRaises(ReaderNetworkError):
+            GitHubReader(**self.KWARGS).read(self.PATH)
+
+    @patch("evennia_yaml_reader.github.urllib.request.urlopen")
+    def test_403_with_quota_remaining_raises_auth_error(self, mock_urlopen):
+        # Not rate-limited, so the PAT lacks scope — retrying cannot help.
+        mock_urlopen.side_effect = self._http_error(
+            403, "Forbidden", "X-RateLimit-Remaining: 4999\n"
+        )
+        with self.assertRaises(ReaderAuthError):
+            GitHubReader(**self.KWARGS).read(self.PATH)
+
+    @patch("evennia_yaml_reader.github.urllib.request.urlopen")
+    def test_other_http_status_raises_network_error(self, mock_urlopen):
+        mock_urlopen.side_effect = self._http_error(500, "Internal Server Error")
+        with self.assertRaises(ReaderNetworkError) as caught:
+            GitHubReader(**self.KWARGS).read(self.PATH)
+        self.assertIn("500", str(caught.exception))
+
+    @patch("evennia_yaml_reader.github.urllib.request.urlopen")
+    def test_undecodable_bytes_raise_parse_error(self, mock_urlopen):
+        mock_urlopen.return_value = self._response_with_payload(UNDECODABLE_BYTES)
+        with self.assertRaises(ReaderParseError):
+            GitHubReader(**self.KWARGS).read(self.PATH)
+
 
 class LocalReaderTest(unittest.TestCase):
     """Verify LocalReader.read() against real temp-directory fixtures."""
@@ -150,6 +255,53 @@ class LocalReaderTest(unittest.TestCase):
         self._write("hello.yaml", b"k: v\n")
         result = LocalReader(root=str(self.root)).read("hello.yaml")
         self.assertEqual(result.parsed, {"k": "v"})
+
+    def test_absolute_path_blocked(self):
+        # root / "/abs" discards root in pathlib — a different escape route
+        # to the "../" one, past the same guard.
+        with self.assertRaises(ReaderNotFoundError):
+            LocalReader(root=self.root).read("/etc/passwd")
+
+    def test_symlink_escaping_root_blocked(self):
+        outside = tempfile.TemporaryDirectory()
+        self.addCleanup(outside.cleanup)
+        secret = Path(outside.name) / "secret.yaml"
+        secret.write_bytes(b"secret: true\n")
+        (self.root / "link.yaml").symlink_to(secret)
+
+        with self.assertRaises(ReaderNotFoundError):
+            LocalReader(root=self.root).read("link.yaml")
+
+    @unittest.skipIf(
+        hasattr(os, "geteuid") and os.geteuid() == 0,
+        "root bypasses filesystem permissions",
+    )
+    def test_permission_denied_raises_auth_error(self):
+        target = self._write("locked.yaml", b"k: v\n")
+        target.chmod(0o000)
+        self.addCleanup(target.chmod, 0o600)
+        with self.assertRaises(ReaderAuthError):
+            LocalReader(root=self.root).read("locked.yaml")
+
+    def test_directory_path_raises_network_error(self):
+        (self.root / "subfolder").mkdir()
+        with self.assertRaises(ReaderNetworkError) as caught:
+            LocalReader(root=self.root).read("subfolder")
+        # The OS's own wording carries the cause through to the consumer.
+        self.assertIn("directory", str(caught.exception).lower())
+
+    def test_undecodable_bytes_raise_parse_error(self):
+        self._write("latin1.yaml", UNDECODABLE_BYTES)
+        with self.assertRaises(ReaderParseError):
+            LocalReader(root=self.root).read("latin1.yaml")
+
+    def test_empty_document_reads_as_none(self):
+        # Empty is a successful read, not a failure — whether it means
+        # anything is the consumer's call.
+        self._write("empty.yaml", b"")
+        result = LocalReader(root=self.root).read("empty.yaml")
+        self.assertEqual(result.raw_bytes, b"")
+        self.assertIsNone(result.parsed)
 
 
 if __name__ == "__main__":
