@@ -6,6 +6,7 @@ to get the raw file body in one hop. Authenticates via Bearer token
 (works for both classic and fine-grained PATs).
 """
 import urllib.error
+import urllib.parse
 import urllib.request
 
 import yaml
@@ -35,9 +36,11 @@ class GitHubReader(Reader):
     The path within the repo is supplied per-read via ``read(path)``.
 
     Raises (from read()):
-        ReaderAuthError:     HTTP 401 — PAT rejected.
+        ReaderAuthError:     HTTP 401 — PAT rejected; or HTTP 403 where the
+                             rate limit is not exhausted (PAT scope).
         ReaderNotFoundError: HTTP 404 — repo, ref, or path not found.
-        ReaderNetworkError:  HTTP non-401/404 or network failure.
+        ReaderNetworkError:  HTTP 403 with the rate limit exhausted, any other
+                             non-401/404 status, or a network failure.
         ReaderParseError:    YAML or UTF-8 decode failure.
     """
 
@@ -49,9 +52,15 @@ class GitHubReader(Reader):
         self.pat = pat
 
     def read(self, path: str) -> ReaderResult:
+        # `path` is a plain path, never pre-encoded — the same string is handed
+        # to LocalReader, which opens it literally. Escaping is this reader's
+        # job because it is the one building a URL. `/` stays safe so the
+        # segment structure survives; without the escape a `#` or `?` in a
+        # filename truncates the path and takes `ref` with it.
+        quoted_path = urllib.parse.quote(path, safe="/")
         url = (
             f"https://api.github.com/repos/{self.repo}"
-            f"/contents/{path}?ref={self.ref}"
+            f"/contents/{quoted_path}?ref={self.ref}"
         )
         request = urllib.request.Request(
             url,
@@ -71,6 +80,22 @@ class GitHubReader(Reader):
             if e.code == 401:
                 raise ReaderAuthError(
                     f"GitHub auth failed (401) for {self.repo}@{self.ref}:{path}"
+                ) from e
+            if e.code == 403:
+                # GitHub returns 403 both for rate-limiting and for a PAT
+                # lacking the required scope. Only the first is retryable, and
+                # the remaining-quota header is what tells them apart — so the
+                # two land in different exception types and the consumer can
+                # dispatch on "can retrying help?" without matching strings.
+                remaining = (e.headers or {}).get("x-ratelimit-remaining")
+                if remaining == "0":
+                    raise ReaderNetworkError(
+                        f"GitHub rate limit exceeded (403) for "
+                        f"{self.repo}@{self.ref}:{path}"
+                    ) from e
+                raise ReaderAuthError(
+                    f"GitHub denied access (403) for {self.repo}@{self.ref}:{path}"
+                    f" — check the PAT's scope for this repository"
                 ) from e
             if e.code == 404:
                 raise ReaderNotFoundError(

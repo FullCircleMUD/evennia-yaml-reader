@@ -113,6 +113,7 @@ Concrete readers must NOT leak backend-specific exception types to callers; tran
 - **No `close()` / context manager.** Readers don't hold resources between calls — every `read()` is independent. If a future reader needs connection pooling, that's the subclass's concern; the contract stays single-call-per-fetch.
 - **No retry / caching.** Each is a strictly orthogonal concern that belongs in a wrapper or middleware, not the contract. A reader that retries internally couples policy with mechanism in a way that's hard to override.
 - **`path` is `str`, not `Path`.** The contract is platform-neutral and works against backends where filesystem paths aren't meaningful (HTTP, S3 keys). A backend that wants `pathlib.Path` semantics converts at its own boundary.
+- **`path` is always a plain path, never pre-encoded.** The same string is valid against every reader — `LocalReader` opens it literally, so a caller cannot percent-encode it to suit a URL-based backend without breaking the filesystem one. Escaping is each reader's own job, done at its backend boundary: `GitHubReader` percent-encodes when it builds the request URL. A path containing `#`, `?`, a space or non-ASCII characters is therefore the reader's problem to handle, not the consumer's to avoid.
 
 ### Tests
 
