@@ -6,7 +6,7 @@ The library abstracts *where the YAML lives* — local filesystem, GitHub repo, 
 
 ## Status
 
-**Foundational.** `Reader` contract + `GitHubReader` + `LocalReader` are in place, ported from [evennia-world-builder](https://github.com/FullCircleMUD/evennia-world-builder) where the pattern was first proven. 15 unit tests green. See [docs/progress.md](https://github.com/FullCircleMUD/evennia-yaml-reader/blob/main/docs/progress.md) for the running milestone log.
+**Foundational.** `Reader` contract + `GitHubReader` + `LocalReader` are in place, ported from [evennia-world-builder](https://github.com/FullCircleMUD/evennia-world-builder) where the pattern was first proven. Every case the suite covers is listed in [docs/test-plan.md](https://github.com/FullCircleMUD/evennia-yaml-reader/blob/main/docs/test-plan.md). See [docs/progress.md](https://github.com/FullCircleMUD/evennia-yaml-reader/blob/main/docs/progress.md) for the running milestone log.
 
 ## What's in the box
 
