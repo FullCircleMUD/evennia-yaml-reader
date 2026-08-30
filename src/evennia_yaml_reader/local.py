@@ -67,7 +67,7 @@ class LocalReader(Reader):
 
         try:
             parsed = yaml.safe_load(raw_bytes)
-        except (yaml.YAMLError, UnicodeDecodeError) as e:
+        except yaml.YAMLError as e:
             raise ReaderParseError(str(e)) from e
 
         return ReaderResult(raw_bytes=raw_bytes, parsed=parsed)
